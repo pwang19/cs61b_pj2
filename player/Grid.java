@@ -43,7 +43,7 @@ public class Grid {
   @return true if it is a valid move
   @return false if it is not
   */
-  protected void isValid() throws InvalidMoveException {
+  protected void isValid(Move m) throws InvalidMoveException {
   	if(hasPiece() || inCorner() || inOppGoal() || isClustered()) {
   		throw new InvalidMoveException();
   	} else {
@@ -71,7 +71,7 @@ public class Grid {
   	return new Move[];
   }
 
-  public Move miniMax(Move[] moves) {
+  public Move miniMax(Move[] moves, int searchDepth) {
   	return new Move();
   }
 }

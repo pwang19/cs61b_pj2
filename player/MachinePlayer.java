@@ -11,7 +11,6 @@ public class MachinePlayer extends Player {
   protected final int OPPONENT = 1;
   
   private Grid board; //this machine's internal board representation
-  private Grid 
   int searchDepth; // this machine's search depth
 
 
@@ -43,11 +42,12 @@ public class MachinePlayer extends Player {
     Move[] moves = board.generateAllPossibleMoves();
 
     // algorithm to find best possible move
-    Move chosenMove = board.miniMax(moves);
+    Move chosenMove = board.miniMax(moves, searchDepth);
 
     // place piece on board
-    if(chosenMove.moveKind ==)
-      board.putPiece(COMPUTER, chosenMove.x1, chosenMove.y1);
+    if(chosenMove.moveKind == 2)
+      board.removePiece(chosenMove.x2, chosenMove.y2);
+    board.putPiece(COMPUTER, chosenMove.x1, chosenMove.y1);
 
     // return the move
     return chosenMove;
@@ -59,8 +59,12 @@ public class MachinePlayer extends Player {
   // player.  This method allows your opponents to inform you of their moves.
   public boolean opponentMove(Move m) {
     // place opponent piece on the grid
-    board.putPiece(OPPONENT);
-    return false;
+    if(!board.isValid(m))
+      return false;
+    if(m.moveKind == 2)
+      board.removePiece(m.x2, m.y2);
+    board.putPiece(OPPONENT, m.x1, m.y1);
+    return true;
   }
 
   // If the Move m is legal, records the move as a move by "this" player
@@ -69,10 +73,12 @@ public class MachinePlayer extends Player {
   // player.  This method is used to help set up "Network problems" for your
   // player to solve.
   public boolean forceMove(Move m) {
-    //if(invalid)
-    return false;
-    //else
-    //return true;
+    if(!board.isValid(m))
+      return false;
+    if(m.moveKind == 2)
+      board.removePiece(m.x2, m.y2);
+    board.putPiece(COMPUTER, m.x1, m.y1);
+    return true;
   }
 
 }
