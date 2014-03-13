@@ -7,8 +7,8 @@ package player;
  *  made by both players.  Can select a move for itself.
  */
 public class MachinePlayer extends Player {
-  protected final int COMPUTER = 0;
-  protected final int OPPONENT = 1;
+  protected static final int COMPUTER = 0;
+  protected static final int OPPONENT = 1;
   
   private Grid board; //this machine's internal board representation
   int searchDepth; // this machine's search depth
@@ -22,6 +22,7 @@ public class MachinePlayer extends Player {
       if(color == 1)
         myName = "white";
       this.searchDepth = 1; // needs to search as high as possible within 5 seconds
+      board = new Grid(color);
   }
 
   // Creates a machine player with the given color and search depth.  Color is
@@ -32,6 +33,7 @@ public class MachinePlayer extends Player {
       if(color == 1)
         myName = "white";
       this.searchDepth = searchDepth;
+      board = new Grid(color);
   }
 
   // Returns a new move by "this" player.  Internally records the move (updates
@@ -42,10 +44,10 @@ public class MachinePlayer extends Player {
     Move[] moves = board.generateAllPossibleMoves();
 
     // algorithm to find best possible move
-    Move chosenMove = board.miniMax(moves, searchDepth);
+    Move chosenMove = miniMax(moves, searchDepth);
 
     // place piece on board
-    if(chosenMove.moveKind == 2)
+    if(chosenMove.moveKind == Move.STEP)
       board.removePiece(chosenMove.x2, chosenMove.y2);
     board.putPiece(COMPUTER, chosenMove.x1, chosenMove.y1);
 
@@ -61,7 +63,7 @@ public class MachinePlayer extends Player {
     // place opponent piece on the grid
     if(!board.isValid(m))
       return false;
-    if(m.moveKind == 2)
+    if(m.moveKind == Move.STEP)
       board.removePiece(m.x2, m.y2);
     board.putPiece(OPPONENT, m.x1, m.y1);
     return true;
@@ -73,12 +75,28 @@ public class MachinePlayer extends Player {
   // player.  This method is used to help set up "Network problems" for your
   // player to solve.
   public boolean forceMove(Move m) {
-    if(!board.isValid(m))
+    if(!board.isValid(m)) {
       return false;
-    if(m.moveKind == 2)
+    }
+
+    if(m.moveKind == 2) {
       board.removePiece(m.x2, m.y2);
+    }
+
     board.putPiece(COMPUTER, m.x1, m.y1);
     return true;
+  }
+
+
+  /**
+  * miniMax() calculates the best move within a given set of moves
+  * for a given search depth.
+  * @param moves the array of possible moves
+  * @param searchDepth the search depth complexity
+  * @return the best calculated possible move
+  **/
+  private Move miniMax(Move[] moves, int searchDepth) {
+    return new Move();
   }
 
 }

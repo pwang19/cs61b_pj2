@@ -1,10 +1,38 @@
 public class Grid {
 
+  private final int BOARD_DIMENSIONS = 8;
 	Coordinate[][] board;
+  
+  private int computer_pieces;
+	given
 
-	public Grid() {
-		board = new Coordinate[8][8];
-		//instantiate coordinates
+  /**
+  * Instantiate a board
+  **/
+  
+  public Grid(int playerColor) {
+		board = new Coordinate[BOARD_DIMENSIONS][BOARD_DIMENSIONS];
+		
+    //instantiate all coordinates
+    for(int i = 0; i < BOARD_DIMENSIONS, i++) {
+      for(int j = 0; j < BOARD_DIMENSIONS, j++) {
+        board[i][j] = new Coordinate();
+      }
+    }
+
+    //makes the corners and opponent goals invalid
+    if(playerColor == 0) {
+      for(int i = 0; i < BOARD_DIMENSIONS, i++) {
+        board[i][0].setValid(false);
+       board[i][BOARD_DIMENSIONS - 1].setValid(false);
+      }
+    } else if(playerColor == 1) {
+      for(int i = 0; i < BOARD_DIMENSIONS, i++) {
+        board[0][i].setValid(false);
+       board[BOARD_DIMENSIONS - 1][i].setValid(false);
+      }
+    }
+
 	}
 
 	  /**
@@ -27,14 +55,28 @@ public class Grid {
   	return false;
   }
 
-
+  /**
+  * putPiece() puts a piece on the board a piece on the board.
+  * @param side either COMPUTER or OPPONENT
+  * @param x x-coordinate
+  * @param y y-coordinate
+  */
   protected void putPiece(int side, int x, int y) {
   	if(isValid()) {
   		//do it
+      if(side == 0) {
+        computer_pieces++;
+      }
   	}
 
   }
 
+  /**
+  * removePiece() removes a piece on the board at the
+  * specified coordinates.
+  * @param x x-coordinate
+  * @param y y-coordinate
+  */
   protected void removePiece(int x, int y) {
   	//removes piece at specified coordinates
   }
@@ -45,63 +87,66 @@ public class Grid {
   * @return true if it is a valid move
   * @return false if it is not
   */
-  protected void isValid(Move m) throws InvalidMoveException {
-  	if(hasPiece() || inCorner() || inOppGoal() || isClustered()) {
-  		throw new InvalidMoveException();
-  	} else {
-  		//do nothing?
+  protected boolean isValid(Move m, int side) throws InvalidMoveException {
+  	// if(hasPiece(m) || inCorner(m) || inOppGoal(m, side) || isClustered(m, side)) {
+  	if(board[m.x1, m.y1].isValid()) {
+    	throw new InvalidMoveException();
+      return false;
   	}
-  }
-
-  /**
-  * inCorner() checks if the move is in a corner.
-  * @param move the move
-  **/
-  private boolean inCorner(Move m) {
-  	return false;
-  }
-
-  /**
-  * inOppGoal() checks if the move is in the opposite goal.
-  * @param move the move
-  **/
-  private boolean inOppGoal(Move m) {
-  	return false;
-  }
-
-  /**
-  * inClustered() checks if the move makes 3 or more pieces adjacent
-  * to one another.
-  * @param move the move
-  **/
-  private boolean isClustered(Move m) {
-  	return false;
-  }
-
-  /**
-  * inCorner() checks if there is already a piece in the final location.
-  * @param move the move
-  **/
-  private boolean hasPiece(Move m) {
-  	return false;
+    return true;
   }
 
   /**
   * generateAllPossibleMoves() generates an array of all the possible
   * moves that our bot can make.
   **/
+
   protected Move[] generateAllPossibleMoves() {
-  	return new Move[];
+  	Move[] moves = new Move[10];
+    if(allPiecesUsed()) {
+      //all generated moves are step moves
+    } else {
+      //all generated moves are add moves
+    }
+    return moves;
   }
 
-  /**
-  * miniMax() calculates the best move within a given set of moves
-  * for a given search depth.
-  * @param moves the array of possible moves
-  * @param searchDepth the search depth complexity
-  * @return the best calculated possible move
-  **/
-  public Move miniMax(Move[] moves, int searchDepth) {
-  	return new Move();
+  private boolean allPiecesUsed() {
+    return (computer_pieces >= 10);
   }
+
+  // /**
+  // * inCorner() checks if the move is in a corner.
+  // * @param move the move
+  // **/
+  // private boolean inCorner(Move m) {
+  //  return false;
+  // }
+
+  // /**
+  // * inOppGoal() checks if the move is in the opposite goal.
+  // * @param move the move
+  // * @param side either COMPUTER or OPPONENT
+  // **/
+  // private boolean inOppGoal(Move m, int side) {
+  //  return false;
+  // }
+
+  // /**
+  // * inClustered() checks if the move makes 3 or more pieces adjacent
+  // * to one another.
+  // * @param move the move
+  // * @param side either COMPUTER or OPPONENT
+  // **/
+  // private boolean isClustered(Move m, int side) {
+  //  return false;
+  // }
+
+  // /**
+  // * inCorner() checks if there is already a piece in the final location.
+  // * @param move the move
+  // **/
+  // private boolean hasPiece(Move m) {
+  //  return false;
+  // }
 }
