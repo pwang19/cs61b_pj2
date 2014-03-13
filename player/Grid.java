@@ -39,9 +39,11 @@ public class Grid {
   	//removes piece at specified coordinates
   }
 
-  /*
-  @return true if it is a valid move
-  @return false if it is not
+  /**
+  * isValid() checks if this move is a valid move.
+  * @param m a move
+  * @return true if it is a valid move
+  * @return false if it is not
   */
   protected void isValid(Move m) throws InvalidMoveException {
   	if(hasPiece() || inCorner() || inOppGoal() || isClustered()) {
@@ -51,26 +53,54 @@ public class Grid {
   	}
   }
 
-  private boolean inCorner() {
+  /**
+  * inCorner() checks if the move is in a corner.
+  * @param move the move
+  **/
+  private boolean inCorner(Move m) {
   	return false;
   }
 
-  private boolean inOppGoal() {
+  /**
+  * inOppGoal() checks if the move is in the opposite goal.
+  * @param move the move
+  **/
+  private boolean inOppGoal(Move m) {
   	return false;
   }
 
-  private boolean isClustered() {
+  /**
+  * inClustered() checks if the move makes 3 or more pieces adjacent
+  * to one another.
+  * @param move the move
+  **/
+  private boolean isClustered(Move m) {
   	return false;
   }
 
-  private boolean hasPiece() {
+  /**
+  * inCorner() checks if there is already a piece in the final location.
+  * @param move the move
+  **/
+  private boolean hasPiece(Move m) {
   	return false;
   }
 
+  /**
+  * generateAllPossibleMoves() generates an array of all the possible
+  * moves that our bot can make.
+  **/
   protected Move[] generateAllPossibleMoves() {
   	return new Move[];
   }
 
+  /**
+  * miniMax() calculates the best move within a given set of moves
+  * for a given search depth.
+  * @param moves the array of possible moves
+  * @param searchDepth the search depth complexity
+  * @return the best calculated possible move
+  **/
   public Move miniMax(Move[] moves, int searchDepth) {
   	return new Move();
   }
