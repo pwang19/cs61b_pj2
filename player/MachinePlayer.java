@@ -47,10 +47,13 @@ public class MachinePlayer extends Player {
     Move chosenMove = miniMax(moves, searchDepth);
 
     // place piece on board
-    if(chosenMove.moveKind == Move.STEP)
-      board.removePiece(chosenMove.x2, chosenMove.y2);
-    board.putPiece(COMPUTER, chosenMove.x1, chosenMove.y1);
-
+    try {
+      if(chosenMove.moveKind == Move.STEP)
+        board.removePiece(chosenMove.x2, chosenMove.y2);
+      board.putPiece(COMPUTER, chosenMove.x1, chosenMove.y1);
+    } catch (InvalidMoveException e) {
+      System.out.println(e);
+    }
     // return the move
     return chosenMove;
   } 
@@ -63,9 +66,14 @@ public class MachinePlayer extends Player {
     // place opponent piece on the grid
     if(!board.getBoard()[m.x1][m.y1].isValid())
       return false;
-    if(m.moveKind == Move.STEP)
-      board.removePiece(m.x2, m.y2);
-    board.putPiece(OPPONENT, m.x1, m.y1);
+    try{
+      if(m.moveKind == Move.STEP)
+        board.removePiece(m.x2, m.y2);
+      board.putPiece(OPPONENT, m.x1, m.y1);
+      return true;
+    } catch (InvalidMoveException e) {
+      System.out.println(e);
+    }
     return true;
   }
 
@@ -78,12 +86,16 @@ public class MachinePlayer extends Player {
     if(!board.getBoard()[m.x1][m.y1].isValid()) {
       return false;
     }
+    try {
+      if(m.moveKind == 2) {
+        board.removePiece(m.x2, m.y2);
+      }
 
-    if(m.moveKind == 2) {
-      board.removePiece(m.x2, m.y2);
+      board.putPiece(COMPUTER, m.x1, m.y1);
+      return true;
+    } catch (InvalidMoveException e) {
+      System.out.println(e);
     }
-
-    board.putPiece(COMPUTER, m.x1, m.y1);
     return true;
   }
 
@@ -96,7 +108,7 @@ public class MachinePlayer extends Player {
   * @return the best calculated possible move
   **/
   private Move miniMax(Move[] moves, int searchDepth) {
-    return new Move();
+    return moves[(int) (Math.random() * moves.length)];
   }
 
 }

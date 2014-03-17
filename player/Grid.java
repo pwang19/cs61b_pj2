@@ -62,15 +62,26 @@ public class Grid {
   * @param x x-coordinate
   * @param y y-coordinate
   */
-  protected void putPiece(int side, int x, int y) {
-  	if(board[x][y].isValid()) {
-  		//do it
-      if(side == 0) {
-        computer_pieces++;
-      }
-  	}
+  protected void putPiece(int side, int x, int y) throws InvalidMoveException{
+  	// if adding opponent piece, don't even bother checking valid
+    // the ref would catch them cheating anyways.
+    if(side == MachinePlayer.OPPONENT) {
+      board[x][y].addPiece(side + 1);
+    
+    //when adding our piece, we have to check validity.
+    } else if(board[x][y].isValid()) {	
+      board[x][y].addPiece(side + 1);
 
+      // if adjacent to another piece of same color, 
+      // then make invalid some boxes
+
+      // add pieces count
+      computer_pieces++;
+    } else {
+      throw new InvalidMoveException(x, y);
+    }
   }
+
 
   /**
   * removePiece() removes a piece on the board at the
@@ -80,20 +91,6 @@ public class Grid {
   */
   protected void removePiece(int x, int y) {
   	//removes piece at specified coordinates
-  }
-
-  /**
-  * isValid() checks if this move is a valid move.
-  * @param m a move
-  * @return true if it is a valid move
-  * @return false if it is not
-  */
-  protected boolean isValid(Move m, int side) throws InvalidMoveException {
-  	// if(hasPiece(m) || inCorner(m) || inOppGoal(m, side) || isClustered(m, side)) {
-  	if(board[m.x1][m.y1].isValid()) {
-    	throw new InvalidMoveException();
-  	}
-    return true;
   }
 
   /**
@@ -119,50 +116,54 @@ public class Grid {
     return board;
   }
 
-  // /**
-  // * inCorner() checks if the move is in a corner.
-  // * @param move the move
-  // **/
-  // private boolean inCorner(Move m) {
-  //  return false;
-  // }
-
-  // /**
-  // * inOppGoal() checks if the move is in the opposite goal.
-  // * @param move the move
-  // * @param side either COMPUTER or OPPONENT
-  // **/
-  // private boolean inOppGoal(Move m, int side) {
-  //  return false;
-  // }
-
-  // /**
-  // * inClustered() checks if the move makes 3 or more pieces adjacent
-  // * to one another.
-  // * @param move the move
-  // * @param side either COMPUTER or OPPONENT
-  // **/
-  // private boolean isClustered(Move m, int side) {
-  //  return false;
-  // }
-
-  // /**
-  // * inCorner() checks if there is already a piece in the final location.
-  // * @param move the move
-  // **/
-  // private boolean hasPiece(Move m) {
-  //  return false;
-  // }
-
   /**
   * toString() prints out a visual representation of the
   * board onto the console.
   **/
   public String toString() {
-    return "";
+    String board = "----------------------------------------- \n";
+    for(int row = 0; row < 8; row++) {
+      board += "|";
+      for(int col = 0; col < 8; col++) {
+        board += " " + this.board[row][col] + " |";
+      }
+      board += " _" + row;
+      board += "\n-----------------------------------------\n";
+    }
+    board += "  0_   1_   2_   3_   4_   5_   6_   7_";
+    return board;
   }
-  
+
+  // For testing purposes
+  private int getNumPieces() {
+    return computer_pieces;
+  }
+
+  /**
+  * main() is the test class for Grid.
+  **/
   public static void main(String[] args) {
-	  
+    Grid g1 = new Grid(0);
+    System.out.println("Grid representation of player 0:");
+    System.out.println(g1);
+
+    Grid g2 = new Grid(1);
+    System.out.println("Grid representation of player 1:");
+    System.out.println(g2);
+
+    try {
+      g1.putPiece(0, 1, 1);
+      System.out.println(g1.getNumPieces());
+      // g1.putPiece(1, 1, 1); //gives error. good.
+      // System.out.println(g1.getNumPieces()); 
+      g1.putPiece(1, 2, 1);
+      System.out.println(g1.getNumPieces());
+
+      System.out.println(g1);
+
+    } catch (InvalidMoveException e) {
+      System.out.println(e);
+    }
   }
+
 }

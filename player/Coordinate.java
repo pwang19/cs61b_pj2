@@ -38,4 +38,26 @@ public class Coordinate {
 		return valid;
 	}
 
+	/**
+	* toString() gives a String representation of the coordinate.
+	* 
+	* @return there are 2 characters:
+	* 				(1) piece representation
+	*					0 = empty
+	*					1 = computer
+	*					2 = enemy
+	*				(2) valid/invalid
+	*					o = valid
+	*					x = invalid
+	**/
+	public String toString() {
+		String str = "" + piece;
+		if(valid) {
+			str += "o";
+		} else {
+			str += "x";
+		}
+		return str;
+	}
+
 }

@@ -5,7 +5,8 @@ public class InvalidMoveException extends Exception {
 		super("Invalid Move!");
 	}
 
-	public InvalidMoveException(String err) {
-		super("Invalid Move: " + err);
+	public InvalidMoveException(int x, int y) {
+		super("Tried to place piece on " +
+		"coordinates: (" + x + ", " + y + ")");
 	}
 }
