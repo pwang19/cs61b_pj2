@@ -1,33 +1,34 @@
+package player;
+
 public class Grid {
 
   private final int BOARD_DIMENSIONS = 8;
-	Coordinate[][] board;
+	private Coordinate[][] board;
   
   private int computer_pieces;
-	given
 
   /**
   * Instantiate a board
   **/
-  
+
   public Grid(int playerColor) {
 		board = new Coordinate[BOARD_DIMENSIONS][BOARD_DIMENSIONS];
 		
     //instantiate all coordinates
-    for(int i = 0; i < BOARD_DIMENSIONS, i++) {
-      for(int j = 0; j < BOARD_DIMENSIONS, j++) {
+    for(int i = 0; i < BOARD_DIMENSIONS; i++) {
+      for(int j = 0; j < BOARD_DIMENSIONS; j++) {
         board[i][j] = new Coordinate();
       }
     }
 
     //makes the corners and opponent goals invalid
     if(playerColor == 0) {
-      for(int i = 0; i < BOARD_DIMENSIONS, i++) {
+      for(int i = 0; i < BOARD_DIMENSIONS; i++) {
         board[i][0].setValid(false);
        board[i][BOARD_DIMENSIONS - 1].setValid(false);
       }
     } else if(playerColor == 1) {
-      for(int i = 0; i < BOARD_DIMENSIONS, i++) {
+      for(int i = 0; i < BOARD_DIMENSIONS; i++) {
         board[0][i].setValid(false);
        board[BOARD_DIMENSIONS - 1][i].setValid(false);
       }
@@ -62,7 +63,7 @@ public class Grid {
   * @param y y-coordinate
   */
   protected void putPiece(int side, int x, int y) {
-  	if(isValid()) {
+  	if(board[x][y].isValid()) {
   		//do it
       if(side == 0) {
         computer_pieces++;
@@ -89,9 +90,8 @@ public class Grid {
   */
   protected boolean isValid(Move m, int side) throws InvalidMoveException {
   	// if(hasPiece(m) || inCorner(m) || inOppGoal(m, side) || isClustered(m, side)) {
-  	if(board[m.x1, m.y1].isValid()) {
+  	if(board[m.x1][m.y1].isValid()) {
     	throw new InvalidMoveException();
-      return false;
   	}
     return true;
   }
@@ -113,6 +113,10 @@ public class Grid {
 
   private boolean allPiecesUsed() {
     return (computer_pieces >= 10);
+  }
+
+  protected Coordinate[][] getBoard() {
+    return board;
   }
 
   // /**
@@ -149,4 +153,16 @@ public class Grid {
   // private boolean hasPiece(Move m) {
   //  return false;
   // }
+
+  /**
+  * toString() prints out a visual representation of the
+  * board onto the console.
+  **/
+  public String toString() {
+    return "";
+  }
+  
+  public static void main(String[] args) {
+	  
+  }
 }
