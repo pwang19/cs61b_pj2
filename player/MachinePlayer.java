@@ -61,7 +61,7 @@ public class MachinePlayer extends Player {
   // player.  This method allows your opponents to inform you of their moves.
   public boolean opponentMove(Move m) {
     // place opponent piece on the grid
-    if(!board.isValid(m))
+    if(!board.getBoard()[m.x1][m.y1].isValid())
       return false;
     if(m.moveKind == Move.STEP)
       board.removePiece(m.x2, m.y2);
@@ -75,7 +75,7 @@ public class MachinePlayer extends Player {
   // player.  This method is used to help set up "Network problems" for your
   // player to solve.
   public boolean forceMove(Move m) {
-    if(!board.isValid(m)) {
+    if(!board.getBoard()[m.x1][m.y1].isValid()) {
       return false;
     }
 

@@ -1,4 +1,4 @@
-
+package player;
 
 public class Coordinate {
 
@@ -20,12 +20,12 @@ public class Coordinate {
 	}
 
 
-	public void addPiece(int piece) {
+	protected void addPiece(int piece) {
 		this.piece = piece;
 		valid = false;
 	}
 
-	public void removePiece() {
+	protected void removePiece() {
 		piece = 0;
 		valid = true;
 	}
