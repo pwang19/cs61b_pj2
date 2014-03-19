@@ -24,13 +24,17 @@ public class Grid {
     //makes the corners and opponent goals invalid
     if(playerColor == 0) {
       for(int i = 0; i < BOARD_DIMENSIONS; i++) {
-        board[i][0].setValid(false);
-       board[i][BOARD_DIMENSIONS - 1].setValid(false);
+        board[i][0].increaseInfluence();
+        board[i][0].increaseInfluence();
+        board[i][BOARD_DIMENSIONS - 1].increaseInfluence();
+        board[i][BOARD_DIMENSIONS - 1].increaseInfluence();
       }
     } else if(playerColor == 1) {
       for(int i = 0; i < BOARD_DIMENSIONS; i++) {
-        board[0][i].setValid(false);
-       board[BOARD_DIMENSIONS - 1][i].setValid(false);
+        board[0][i].increaseInfluence();
+        board[0][i].increaseInfluence();
+       board[BOARD_DIMENSIONS - 1][i].increaseInfluence();
+       board[BOARD_DIMENSIONS - 1][i].increaseInfluence();
       }
     }
 
@@ -74,7 +78,7 @@ public class Grid {
 
       // if adjacent to another piece of same color, 
       // then make invalid some boxes
-
+      // board[x][y].
       // add pieces count
       computer_pieces++;
     } else {
@@ -99,11 +103,18 @@ public class Grid {
   **/
 
   protected Move[] generateAllPossibleMoves() {
-  	Move[] moves = new Move[10];
+  	Move[] moves = new Move[10]; // what kind of data type do we want for this? dlist?
     if(allPiecesUsed()) {
       //all generated moves are step moves
+
     } else {
       //all generated moves are add moves
+      // for(int row = 0; row < BOARD_DIMENSIONS; row++) {
+      //   for(int col = 0; col < BOARD_DIMENSIONS; col++) {
+      //     if(board[row][col].isValid())
+      //       // add move onto moves
+      //   }
+      // }
     }
     return moves;
   }
