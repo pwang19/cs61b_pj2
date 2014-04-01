@@ -47,12 +47,9 @@ public class MachinePlayer extends Player {
     // generate all possible moves
     list.DList moves = board.generateAllPossibleMoves(COMPUTER);
 
-    try {
     // algorithm to find best possible move
     Best bestMove = miniMax(COMPUTER, 1234567, -1234567, searchDepth);
-  } catch (Invalid) {
 
-  }
     // place piece on board
     Move chosenMove = bestMove.move;
     board.doMove(COMPUTER, chosenMove);
@@ -85,6 +82,7 @@ public class MachinePlayer extends Player {
     return true;
     }
 
+
   /**
   * miniMax() calculates the best move within a given set of moves
   * for a given search depth.
@@ -92,16 +90,17 @@ public class MachinePlayer extends Player {
   * @param searchDepth the search depth complexity
   * @return the best calculated possible move
   **/
-  private Best miniMax(int side, int alpha, int beta, int searchDepth) throws InvalidNodeException {
+  private Best miniMax(int side, int alpha, int beta, int searchDepth) {
 	  Best myBest = new Best();     // Machine's best move
 	  Best reply;                   // Opponent's best reply
 	  int side2;
-	  if (side == 0) {
+	  if (side == 0){
 		  side2 = 1;
-	  } else {
+	  }else{
 		  side2 = 0;
 	  }
-	  
+    
+	  try {
 	  if (board.isFull() || board.hasValidNetwork(side) || searchDepth >= this.searchDepth){
 		  myBest.score = eval();
 		  return myBest;
@@ -113,7 +112,7 @@ public class MachinePlayer extends Player {
 		  }
 	  DList moves = board.generateAllPossibleMoves(side);
 	  DListNode pointer;
-	try {
+
 		pointer = (DListNode) moves.front().next();
 	  myBest.move = (Move) pointer.item();
 	  while(pointer != moves.front()){
@@ -134,19 +133,23 @@ public class MachinePlayer extends Player {
 	  }
 	}
 	  catch (InvalidNodeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	  return myBest;
  }
   
-  private int eval() throws InvalidNodeException {
+  private int eval(){
+	  int score = 0;
+    try {
 	  if (board.hasValidNetwork(COMPUTER)){
-		  return 1000;
+		  score = 10;
 	  }
 	  else if (board.hasValidNetwork(OPPONENT)){
-		  return -1000;
+		  score = -10;
 		  }
-	  return (board.maxNumOfConnections(COMPUTER) - board.maxNumOfConnections(OPPONENT) + Math.max((board.chipsInGoal(COMPUTER)), 3) + board.getNumPieces() + 10*(board.chipsInGoal(COMPUTER) + board.chipsInGoal(OPPONENT))) ;
+    } catch (InvalidNodeException e) {
+      e.printStackTrace();
+    }
+	  return score;
 	  }
 }
