@@ -47,9 +47,12 @@ public class MachinePlayer extends Player {
     // generate all possible moves
     list.DList moves = board.generateAllPossibleMoves(COMPUTER);
 
+    try {
     // algorithm to find best possible move
     Best bestMove = miniMax(COMPUTER, 1234567, -1234567, searchDepth);
+  } catch (Invalid) {
 
+  }
     // place piece on board
     Move chosenMove = bestMove.move;
     board.doMove(COMPUTER, chosenMove);
@@ -82,7 +85,6 @@ public class MachinePlayer extends Player {
     return true;
     }
 
-
   /**
   * miniMax() calculates the best move within a given set of moves
   * for a given search depth.
@@ -94,9 +96,9 @@ public class MachinePlayer extends Player {
 	  Best myBest = new Best();     // Machine's best move
 	  Best reply;                   // Opponent's best reply
 	  int side2;
-	  if (side == 0){
+	  if (side == 0) {
 		  side2 = 1;
-	  }else{
+	  } else {
 		  side2 = 0;
 	  }
 	  

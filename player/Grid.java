@@ -14,10 +14,10 @@ public class Grid {
   
   protected int computer_pieces;
   protected int total;
+  
   /**
   * Instantiate a board
   **/
-
   public Grid(int side) {
 		board = new int[BOARD_DIMENSIONS][BOARD_DIMENSIONS];
 		for (int x = 0; x < BOARD_DIMENSIONS; x++) {
@@ -60,10 +60,10 @@ public class Grid {
    **/
   protected boolean hasValidNetwork(int side) throws InvalidNodeException {
 	  	int[][] lists = allPieces(side);
-		DList start = Start(side, lists);
+		DList start = start(side, lists);
 		int i = 0;
 		while (i < start.length()) {
-	  	    boolean total = CountNetwork(side, ((int[])start.front().item())[0], ((int[])start.front().item())[1], lists, 0, 0);
+	  	    boolean total = countNetwork(side, ((int[])start.front().item())[0], ((int[])start.front().item())[1], lists, 0, 0);
 	  	    if (total == true) {
 	  	    return true;
 	  	    }
@@ -72,7 +72,7 @@ public class Grid {
 	  }
 
   
-  protected boolean CountNetwork(int side, int startx, int starty, int[][] list, int con, int len) throws InvalidNodeException {
+  protected boolean countNetwork(int side, int startx, int starty, int[][] list, int con, int len) throws InvalidNodeException {
 	  DList back = new DList();
 	  int[][] conn;
 	  boolean discovered = false;
@@ -110,13 +110,13 @@ public class Grid {
 		  int[][] g = listConnections(((int[])pointer2.item())[0], ((int[])pointer2.item())[1]);
 		  pointer2 = pointer2.next();
 		  leng++;
-		  return CountNetwork(side, g[0][0], g[0][1], g, con, len);
+		  return countNetwork(side, g[0][0], g[0][1], g, con, len);
 	  }
 	}
 	return false;
   }
   
-  protected DList Start(int side, int[][] list) {
+  protected DList start(int side, int[][] list) {
 	  DList start = new DList();
 	  for (int i = 0; i < list.length; i++) {
 		  if (inFirstGoal(side, list[i][0], list[i][1])) {
@@ -221,6 +221,7 @@ public class Grid {
 	  int j = 0;
 	  int k = 0;
 
+	  // if index out of bounds, return false
 	  if (x > 7 || y > 7 || x < 0 || y < 0) {
 		  return false;
 	  }
