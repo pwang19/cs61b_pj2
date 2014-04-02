@@ -179,16 +179,26 @@ public class MachinePlayer extends Player {
 			myBest.score = beta;
 		}
 		
+		// generate a list of all the possible moves
 		DList moves = board.generateAllPossibleMoves(side);
 		DListNode pointer;
+		
 		try {
+			// the minimax algorithm with alpha beta pruning
 			pointer = (DListNode) moves.front();
 			myBest.move = (Move) pointer.item();
+			
 			while (pointer.isValidNode()) {
+				
+				// make a move and a response
 				Move m = (Move) pointer.item();
 				board.doMove(side, m);
 				reply = miniMax(side2, alpha, beta, searchDepth + 1);
+				
+				// reset the board
 				board.undoMove(side, m);
+				
+				// analyze the outcome
 				if (side == machine && reply.score > myBest.score) {
 					myBest.move = m;
 					myBest.score = reply.score;
@@ -198,6 +208,8 @@ public class MachinePlayer extends Player {
 					myBest.score = reply.score;
 					beta = reply.score;
 				}
+				
+				// if machine's score is better than opponent, then return the move
 				if (alpha >= beta) {
 					return myBest;
 				}
