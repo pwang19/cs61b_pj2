@@ -27,14 +27,12 @@ public class Grid {
 	 *            the side that MachinePlayer is playing
 	 **/
 	public Grid(int side) {
+
+		// instantiate record with all boolean values of false
+		// instantiate board with all values of 0
 		record = new boolean[BOARD_DIMENSIONS][BOARD_DIMENSIONS];
 		board = new int[BOARD_DIMENSIONS][BOARD_DIMENSIONS];
-		for (int x = 0; x < BOARD_DIMENSIONS; x++) {
-			for (int y = 0; y < BOARD_DIMENSIONS; y++) {
-				board[x][y] = EMPTY;
-				record[x][y] = false;
-			}
-		}
+
 		if (side == BLACK) {
 			myPiece = 1;
 			oppPiece = 2;
@@ -96,18 +94,23 @@ public class Grid {
 	 * @param side
 	 *            either BLACK or WHITE
 	 * @param startx
+	 *            network's starting piece's x-coordinate
 	 * @param starty
-	 * @param con
+	 *            network's starting piece's y-coordinate
+	 * @param numConnections
+	 *            number of connections in network
 	 * @param prevx
 	 * @param prevy
-	 * @return
+	 * @return if true, then there is a valid network
 	 * @throws InvalidNodeException
 	 */
-	protected boolean countNetwork(int side, int startx, int starty, int con,
-			int prevx, int prevy) throws InvalidNodeException {
+	private boolean countNetwork(int side, int startx, int starty,
+			int numConnections, int prevx, int prevy)
+			throws InvalidNodeException {
 		if (record[startx][starty] == true) {
 			return false; // there was no network
 		}
+
 		int check;
 
 		if (side == 0) {
@@ -115,22 +118,25 @@ public class Grid {
 		} else {
 			check = startx;
 		}
-		if (check == 0) { // base case: if in first goal, then fail
-			if (con != 1) {
+
+		// base case: if in first goal, then fail
+		if (check == 0) {
+			if (numConnections != 1) {
 				return false;
 			}
+
+			// if in 2nd goal and more than 6 connections, we have a network
 		} else if (check == 7) {
-			if (con >= 6) { // if in 2nd goal and more than 6 connections, we
-							// have a network! yay
+
+			if (numConnections >= 6) {
 				return true;
 			} else {
 				return false;
 			}
 		}
-		int[][] conn = listConnections(startx, starty); // create list of
-														// connections from
-														// first point in the
-														// list
+
+		// create list of connections from first point in the list
+		int[][] conn = listConnections(startx, starty);
 		for (int i = 0; i < conn.length; i++) {
 			int x = conn[i][0];
 			int y = conn[i][1];
@@ -141,7 +147,7 @@ public class Grid {
 			}
 
 			record[startx][starty] = true;
-			if (countNetwork(side, x, y, con + 1, startx, starty)) {
+			if (countNetwork(side, x, y, numConnections + 1, startx, starty)) {
 				record[startx][starty] = false;
 				return true;
 			}
@@ -225,7 +231,8 @@ public class Grid {
 	}
 
 	/**
-	 * doMove() will update the internal board representation.
+	 * doMove() will update the internal board representation with the move that
+	 * is specified.
 	 * 
 	 * @param side
 	 *            either WHITE or BLACK
@@ -302,10 +309,14 @@ public class Grid {
 	}
 
 	/**
+	 * isValidMove() checks for if doing a certain move is valid by the given
+	 * side.
 	 * 
 	 * @param side
+	 *            machine or opponent
 	 * @param m
-	 * @return
+	 *            the move being checked
+	 * @return boolean of whether the move is valid or not
 	 */
 	protected boolean isValidMove(int side, Move m) {
 		if (m.moveKind == Move.STEP) {
@@ -318,22 +329,27 @@ public class Grid {
 	}
 
 	/**
-	 * isValidMove()
+	 * isValidMove() checks if placing a piece at coordinate(x, y) would be a
+	 * valid move for the given side.
+	 * 
 	 * @param side
 	 * @param x
+	 *            x coordinate
 	 * @param y
-	 * @return
+	 *            y coordinate
+	 * @return boolean of whether placing a piece at coordinate(x, y) would be
+	 *         valid for a particular side or not
 	 */
 	protected boolean isValidMove(int side, int x, int y) {
 		int stotal = 0;
 
 		boolean[][] visited = new boolean[BOARD_DIMENSIONS][BOARD_DIMENSIONS];
-		
+
 		// make sure index is not out of bounds
 		if (x > 7 || y > 7 || x < 0 || y < 0) {
 			return false;
 		}
-		
+
 		if (side == 1) { // if side is white - edges
 			if (y == 0) {
 				return false;
@@ -353,7 +369,7 @@ public class Grid {
 		if (board[x][y] != EMPTY) { // if is piece already there
 			return false;
 		}
-		
+
 		side += 1; // change from player to piece on board
 
 		for (int i = -1; i < 2; i++) {
@@ -385,12 +401,22 @@ public class Grid {
 	}
 
 	/**
-	 * isValid() helps isValidMove()
+	 * isValid() helps isValidMove(). Checks if there is a piece at coordinate
+	 * (x, y) that is a piece of the given side, and only returns true if the
+	 * piece has never been visited before. This helps count the number of
+	 * pieces in a piece's immediate vicinity to check for clusters.
+	 * 
 	 * @param side
+	 *            machine or opponent
 	 * @param x
+	 *            x coordinate being checked
 	 * @param y
+	 *            y coordinate being checked
 	 * @param visit
-	 * @return true if is valid, false if not
+	 *            a doubly linked list containing booleans of which coordinates
+	 *            have already been visited and which have not
+	 * @return true if the coordinate contains a piece of specified side that
+	 *         has not been visited yet, false if not
 	 */
 	private boolean isValid(int side, int x, int y, boolean[][] visit) {
 		if (board[x][y] == side && visit[x][y] == false) {
@@ -451,7 +477,7 @@ public class Grid {
 	 * Determines whether or not the machine player has used all its pieces.
 	 * Helper function to generateAllPossibleMoves().
 	 * 
-	 * @return true if 10 pieces are used
+	 * @return true if 10 machine pieces are used
 	 */
 	private boolean allPiecesUsed() {
 		return machinePieces >= 10;
@@ -467,9 +493,9 @@ public class Grid {
 	 * @return an array of connecting coordinates
 	 */
 	private int[][] listConnections(int x, int y) {
-		// instantiation of arrays with coordinates
 		int[][] sideCoordinates;
 		int[][] opposingCoordinates;
+
 		if (board[x][y] == myPiece) {
 			sideCoordinates = allPieces(machine);
 			opposingCoordinates = allPieces(opponent);
@@ -478,23 +504,11 @@ public class Grid {
 			opposingCoordinates = allPieces(machine);
 		}
 
-		// if arrays are different lengths
 		if (sideCoordinates.length < opposingCoordinates.length) {
-			int[][] array = new int[sideCoordinates.length + 1][2];
-			for (int i = 0; i < sideCoordinates.length; i++) {
-				array[i] = sideCoordinates[i];
-			}
-			array[array.length - 1][0] = 10;
-			array[array.length - 1][1] = 10;
-			sideCoordinates = array;
+			sideCoordinates = increaseArrayLength(sideCoordinates);
+
 		} else if (sideCoordinates.length > opposingCoordinates.length) {
-			int[][] array = new int[opposingCoordinates.length + 1][2];
-			for (int i = 0; i < opposingCoordinates.length; i++) {
-				array[i] = opposingCoordinates[i];
-			}
-			array[array.length - 1][0] = 10;
-			array[array.length - 1][1] = 10;
-			opposingCoordinates = array;
+			opposingCoordinates = increaseArrayLength(opposingCoordinates);
 		}
 
 		// instantiating reference variables
@@ -528,7 +542,6 @@ public class Grid {
 		int z = 8;
 
 		// checking for connections and blocks
-
 		for (int j = 0; j < sideCoordinates.length; j++) {
 			// left to piece
 			if (sideCoordinates[j][1] == y && sideCoordinates[j][0] < x
@@ -570,6 +583,7 @@ public class Grid {
 				h = opposingCoordinates[j][1];
 			}
 
+			// looking for diagonal connections
 			while (a1 >= 0 || c1 < 8 || b1 >= 0 || d1 < 8) {
 				a1--;
 				b1--;
@@ -617,7 +631,6 @@ public class Grid {
 					u = c1;
 					v = d1;
 				}
-
 				if (opposingCoordinates[j][0] == c1
 						&& opposingCoordinates[j][1] == d1 && d1 < z) {
 					yy = c1;
@@ -655,9 +668,10 @@ public class Grid {
 		if (u < yy) {
 			arraySize++;
 		}
-		// instantiate array
+		// instantiate output array
 		int[][] list = new int[arraySize][2];
 		int index = 0;
+
 		// if not blocked, add coordinate to list
 		if (a > b) {
 			list[index][0] = a;
@@ -703,11 +717,28 @@ public class Grid {
 	}
 
 	/**
+	 * increaseArrayLength() will take an array and add one length to it. This
+	 * is a helper method to listConnections().
+	 * 
+	 * @param side
+	 * @return
+	 */
+	private int[][] increaseArrayLength(int[][] side) {
+		int[][] array = new int[side.length + 1][2];
+		for (int i = 0; i < side.length; i++) {
+			array[i] = side[i];
+		}
+		array[array.length - 1][0] = 10;
+		array[array.length - 1][1] = 10;
+		return array;
+	}
+
+	/**
 	 * totalNumberConnections() returns a count of the longest network for a
 	 * particular side.
 	 * 
 	 * @param side
-	 *            either BLACK or WHITE
+	 *            either machine or opponent
 	 * @return the longest network represented by this side
 	 */
 	protected int totalNumberConnections(int side) {

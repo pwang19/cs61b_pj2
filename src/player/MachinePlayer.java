@@ -136,11 +136,13 @@ public class MachinePlayer extends Player {
 	 * miniMax() calculates the best move within a given set of moves for a
 	 * given search depth. Utilizes alpha-beta pruning technique.
 	 * 
-
+	 * 
 	 * @param side
-	 *            the color	 
+	 *            the color
 	 * @param alpha
+	 *            machine score
 	 * @param beta
+	 *            opponent score
 	 * @param searchDepth
 	 *            the search depth complexity
 	 * @return the best calculated possible move
@@ -148,13 +150,13 @@ public class MachinePlayer extends Player {
 	private Best miniMax(int side, int alpha, int beta, int searchDepth) {
 		Best myBest = new Best(); // Machine's best move
 		Best reply; // Opponent's best reply
-		int side2;
+		int otherSide;
 
-		// assign side2
+		// assign otherSide
 		if (side == board.BLACK) {
-			side2 = board.WHITE;
+			otherSide = board.WHITE;
 		} else {
-			side2 = board.WHITE;
+			otherSide = board.BLACK;
 		}
 
 		// if there are already valid networks, then there's no need to look any
@@ -165,7 +167,7 @@ public class MachinePlayer extends Player {
 				return myBest;
 			}
 			if (board.hasValidNetwork(side) || searchDepth >= this.searchDepth
-					|| board.hasValidNetwork(side2)) {
+					|| board.hasValidNetwork(otherSide)) {
 				myBest.score = eval();
 				return myBest;
 			}
@@ -173,32 +175,34 @@ public class MachinePlayer extends Player {
 			// do nothing
 		}
 
+		// assign machine score as alpha
+		// assign opponent score as beta
 		if (side == machine) {
 			myBest.score = alpha;
 		} else {
 			myBest.score = beta;
 		}
-		
+
 		// generate a list of all the possible moves
 		DList moves = board.generateAllPossibleMoves(side);
 		DListNode pointer;
-		
+
 		try {
 			// the minimax algorithm with alpha beta pruning
 			pointer = (DListNode) moves.front();
 			myBest.move = (Move) pointer.item();
-			
+
 			while (pointer.isValidNode()) {
-				
+
 				// make a move and a response
 				Move m = (Move) pointer.item();
 				board.doMove(side, m);
-				reply = miniMax(side2, alpha, beta, searchDepth + 1);
-				
+				reply = miniMax(otherSide, alpha, beta, searchDepth + 1);
+
 				// reset the board
 				board.undoMove(side, m);
-				
-				// analyze the outcome
+
+				// analyze the outcome, and assign the score to alpha/beta
 				if (side == machine && reply.score > myBest.score) {
 					myBest.move = m;
 					myBest.score = reply.score;
@@ -208,8 +212,10 @@ public class MachinePlayer extends Player {
 					myBest.score = reply.score;
 					beta = reply.score;
 				}
-				
-				// if machine's score is better than opponent, then return the move
+
+				// if machine's score is better than opponent, then return the
+				// move. if this is not the case, then do not return the move,
+				// and prune this branch
 				if (alpha >= beta) {
 					return myBest;
 				}
@@ -242,10 +248,11 @@ public class MachinePlayer extends Player {
 
 		// score will keep track of our value
 		int score = 0;
-
+		
+		// step 1. prioritize putting pieces in goal zones
 		// if machine has 1 piece in start goal
 		if (board.numberPiecesInGoal(machine, true) == 1) {
-			score += board.numberPiecesInGoal(machine, true) * 1.5;
+			score += 1.5;
 		}
 
 		// if machine has 2 or more pieces in the start goal
@@ -255,17 +262,19 @@ public class MachinePlayer extends Player {
 
 		// if machine has 1 piece in end goal
 		if (board.numberPiecesInGoal(machine, false) == 1) {
-			score += board.numberPiecesInGoal(machine, false) * 1.5;
+			score += 1.5;
 		}
 
 		// if machine has 2 or more pieces in end goal
 		if (board.numberPiecesInGoal(machine, false) > 1) {
 			score -= board.numberPiecesInGoal(machine, false) * 3;
 		}
-
+		
+		// step 2. prefer making a move that would increase connections
 		// increase the score for every connection machine has
 		score += board.totalNumberConnections(machine);
-
+		
+		// step 3. prefer making a move that would block the opponent
 		// decrease the score for every connection opponent has
 		score -= board.totalNumberConnections(opponent);
 
