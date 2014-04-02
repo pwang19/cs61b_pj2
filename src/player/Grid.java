@@ -5,21 +5,27 @@ import list.*;
 public class Grid {
 
 	private final int BOARD_DIMENSIONS = 8;
-	protected int[][] board;
-	protected static final int EMPTY = 0;
-	protected int PLAYER;
-	protected int OPP;
-	protected int COMP;
-	protected int HUMAN;
+	private final int EMPTY = 0;
+	protected final int BLACK = 0;
+	protected final int WHITE = 1;
 
-	private int computer_pieces;
-	protected int total;
-	private boolean[][] record;
+	protected int[][] board; // our internal grid representation
+
+	protected int myPiece; // this bot's piece representation
+	protected int oppPiece; // opponent's piece representation
+	protected int machine;
+	protected int opponent;
+
+	private int machinePieces;
+	protected int totalPieces; // total number of pieces on the board
+	private boolean[][] record; // for countNetwork()
 
 	/**
-	 * Instantiate a board
+	 * Instantiates a board, knows which color the MachinePlayer is.
+	 * 
+	 * @param side
+	 *            the side that MachinePlayer is playing
 	 **/
-
 	public Grid(int side) {
 		record = new boolean[BOARD_DIMENSIONS][BOARD_DIMENSIONS];
 		board = new int[BOARD_DIMENSIONS][BOARD_DIMENSIONS];
@@ -27,23 +33,22 @@ public class Grid {
 			for (int y = 0; y < BOARD_DIMENSIONS; y++) {
 				board[x][y] = EMPTY;
 				record[x][y] = false;
-				//System.out.println("bye" + board[x][y]);
 			}
 		}
-		if (side == 0) {
-			PLAYER = 1;
-			OPP = 2;
-			COMP = 0;
-			HUMAN = 1;
+		if (side == BLACK) {
+			myPiece = 1;
+			oppPiece = 2;
+			machine = BLACK;
+			opponent = WHITE;
 		}
-		if (side == 1) {
-			PLAYER = 2;
-			OPP = 1;
-			COMP = 1;
-			HUMAN = 0;
+		if (side == WHITE) {
+			myPiece = 2;
+			oppPiece = 1;
+			machine = WHITE;
+			opponent = BLACK;
 		}
-		computer_pieces = 0;
-		total = 0;
+		machinePieces = 0;
+		totalPieces = 0;
 	}
 
 	/**
@@ -58,95 +63,121 @@ public class Grid {
 	 * expect any reasonable behavior).
 	 * 
 	 * @param side
-	 *            is MachinePlayer.COMPUTER or MachinePlayer.OPPONENT
+	 *            is BLACK or WHITE
 	 * @return true if player "side" has a winning network in "this" GameBoard;
 	 *         false otherwise.
 	 **/
 	protected boolean hasValidNetwork(int side) throws InvalidNodeException {
-		if (side == 0){
-			for (int x = 1; x < 8; x++){
-				if (board[x][0] == 1){ //if black
+		if (side == BLACK) {
+			for (int x = 1; x < 8; x++) {
+				if (board[x][0] == 1) { // if piece is on the board
 					if (countNetwork(0, x, 0, 1, -1, -1)) {
 						return true;
 					}
 				}
 			}
-		} else {
-			for (int y = 1; y < 8; y++){
-				if (board[0][y] == 2){ //if white
+		} else { // side is white
+			for (int y = 1; y < 8; y++) {
+				if (board[0][y] == 2) { // if piece is on the board
 					if (countNetwork(1, 0, y, 1, -1, -1)) {
 						return true;
 					}
 				}
 			}
 		}
-		
+
 		return false;
 	}
 
-	protected boolean countNetwork(int side, int startx, int starty, int con, int prevx, int prevy) throws InvalidNodeException {
-	  if (record[startx][starty]==true){
-		  return false; // there was no network
-	  }
-	  int check;
-	  
-	  if(side == 0) {
-		  check = starty;
-	  } else {
-		  check = startx;
-	  }
-	  if (check == 0) {		// base case: if in first goal, then fail
-		  if(con != 1) {
-			  return false;
-		  }
-	  } else if (check == 7) {
-		  if (con >= 6) {   // if in 2nd goal and more than 6 connections, we have a network! yay
-			  return true;
-		  } else {
-			  return false;
-		  }
-	  }
-	int[][] conn = listConnections(startx, starty);  		// create list of connections from first point in the list
-	for (int i = 0; i < conn.length; i++){
-		int x = conn[i][0]; int y = conn[i][1];
-		if(prevx != -1) {
-			if (ifLine(prevx,prevy,startx,starty,x,y)){
-				continue;
+	/**
+	 * countNetwork() checks for a valid network that is at least 6 connections
+	 * long and spans across the start and end zones of the respective sides.
+	 * 
+	 * @param side
+	 *            either BLACK or WHITE
+	 * @param startx
+	 * @param starty
+	 * @param con
+	 * @param prevx
+	 * @param prevy
+	 * @return
+	 * @throws InvalidNodeException
+	 */
+	protected boolean countNetwork(int side, int startx, int starty, int con,
+			int prevx, int prevy) throws InvalidNodeException {
+		if (record[startx][starty] == true) {
+			return false; // there was no network
+		}
+		int check;
+
+		if (side == 0) {
+			check = starty;
+		} else {
+			check = startx;
+		}
+		if (check == 0) { // base case: if in first goal, then fail
+			if (con != 1) {
+				return false;
+			}
+		} else if (check == 7) {
+			if (con >= 6) { // if in 2nd goal and more than 6 connections, we
+							// have a network! yay
+				return true;
+			} else {
+				return false;
 			}
 		}
-		
-		record[startx][starty] = true;
-		if (countNetwork(side, x, y, con + 1, startx, starty)) {
+		int[][] conn = listConnections(startx, starty); // create list of
+														// connections from
+														// first point in the
+														// list
+		for (int i = 0; i < conn.length; i++) {
+			int x = conn[i][0];
+			int y = conn[i][1];
+			if (prevx != -1) {
+				if (ifLine(prevx, prevy, startx, starty, x, y)) {
+					continue;
+				}
+			}
+
+			record[startx][starty] = true;
+			if (countNetwork(side, x, y, con + 1, startx, starty)) {
+				record[startx][starty] = false;
+				return true;
+			}
 			record[startx][starty] = false;
-			return true;
 		}
-		record[startx][starty] = false;
+		return false;
+
 	}
-	return false;
-	
-}
-	
-	private boolean ifLine(int prevx, int prevy, int startx, int starty,int x,int y){
-		if (prevx == startx){
+
+	/**
+	 * 
+	 * @param prevx
+	 * @param prevy
+	 * @param startx
+	 * @param starty
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	private boolean ifLine(int prevx, int prevy, int startx, int starty, int x,
+			int y) {
+		if (prevx == startx) {
 			return prevx == x;
-		}
-		else if (prevy == starty){
+		} else if (prevy == starty) {
 			return prevy == y;
-		}
-		else if (prevx < startx){
-			if (prevy > starty){
-				return (starty<y && startx>x) || (starty>y && startx<x);
+		} else if (prevx < startx) {
+			if (prevy > starty) {
+				return (starty < y && startx > x) || (starty > y && startx < x);
+			} else if (prevy < starty) {
+				return (starty < y && startx < x) || (starty < y && startx < x);
 			}
-			else if (prevy < starty){
-				return (starty<y && startx<x) || (starty<y && startx<x);
-			}
-		}
-		else if (prevx > startx){
-			if (prevy > starty){
-				return (starty<y && startx<x) || (starty>y && startx>x);
-			}
-			else if (prevy < starty){
-				return (starty<y && startx>x) || (starty<y && startx>x);
+		} else if (prevx > startx) {
+			if (prevy > starty) {
+				return (starty < y && startx < x) || (starty > y && startx > x);
+			} else if (prevy < starty) {
+				return (starty < y && startx > x) || (starty < y && startx > x);
 			}
 		}
 		return false;
@@ -164,21 +195,17 @@ public class Grid {
 	 * @throws InvalidMoveException
 	 */
 	protected void putPiece(int side, int x, int y) {
-		if (side != COMP && this.isValidMove(side, x, y)) {
-			board[x][y] = OPP;
-			//System.out.println("derp");
-			total++;
+		if (side != machine && this.isValidMove(side, x, y)) {
+			board[x][y] = oppPiece;
+			totalPieces++;
 			// when adding our piece, we have to check validity.
 			return;
-		} else if (side == COMP && this.isValidMove(side, x, y)) {
-			board[x][y] = PLAYER;
-			//System.out.println("herp");
-			computer_pieces++;
-			total++;
+		} else if (side == machine && this.isValidMove(side, x, y)) {
+			board[x][y] = myPiece;
+			machinePieces++;
+			totalPieces++;
 			return;
 		}
-		
-		//System.out.println("\n\n\n OMG JENNIFER");
 	}
 
 	/**
@@ -191,12 +218,20 @@ public class Grid {
 	 */
 	protected void removePiece(int side, int x, int y) {
 		board[x][y] = EMPTY;
-		total--;
-		if (side == COMP) {
-			computer_pieces--;
+		totalPieces--;
+		if (side == machine) {
+			machinePieces--;
 		}
 	}
 
+	/**
+	 * doMove() will update the internal board representation.
+	 * 
+	 * @param side
+	 *            either WHITE or BLACK
+	 * @param move
+	 *            the move that will be performed
+	 */
 	protected void doMove(int side, Move move) {
 		if (move.moveKind == Move.ADD) {
 			this.putPiece(side, move.x1, move.y1);
@@ -207,6 +242,15 @@ public class Grid {
 		}
 	}
 
+	/**
+	 * undoMove() will revert the board back to its original state one turn ago.
+	 * It accomplishes this task by reversing the move specified.
+	 * 
+	 * @param side
+	 *            either BLACK or WHITE
+	 * @param move
+	 *            the move that will be reversed
+	 */
 	protected void undoMove(int side, Move move) {
 		if (move.moveKind == Move.ADD) {
 			this.removePiece(side, move.x1, move.y1);
@@ -217,37 +261,54 @@ public class Grid {
 		}
 	}
 
+	/**
+	 * allPieces() collects all the pieces coordinates of one color on the
+	 * board.
+	 * 
+	 * @param side
+	 *            either machine or opponent
+	 * @return a 2d array representation of all the coordinates taken by the
+	 *         mentioned side
+	 */
 	protected int[][] allPieces(int side) {
-		int i = 0;
-		int d = 0;
-		if (side == COMP) {
-			d = computer_pieces;
+		int index = 0;
+		int numPieces = 0;
+
+		if (side == machine) {
+			numPieces = machinePieces;
 		} else {
-			d = total - computer_pieces;
+			numPieces = totalPieces - machinePieces;
 		}
-		int[][] pieces = new int[d][2];
+
+		int[][] pieces = new int[numPieces][2];
 		for (int x = 0; x < BOARD_DIMENSIONS; x++) {
 			for (int y = 0; y < BOARD_DIMENSIONS; y++) {
-				if (side == COMP) {
-					if (board[x][y] == PLAYER) {
-						pieces[i][0] = x;
-						pieces[i][1] = y;
-						i++;
+				if (side == machine) {
+					if (board[x][y] == myPiece) {
+						pieces[index][0] = x;
+						pieces[index][1] = y;
+						index++;
 					}
 				} else {
-					if (board[x][y] == OPP) {
-						pieces[i][0] = x;
-						pieces[i][1] = y;
-						i++;
+					if (board[x][y] == oppPiece) {
+						pieces[index][0] = x;
+						pieces[index][1] = y;
+						index++;
 					}
 				}
 			}
 		}
 		return pieces;
 	}
-	
+
+	/**
+	 * 
+	 * @param side
+	 * @param m
+	 * @return
+	 */
 	protected boolean isValidMove(int side, Move m) {
-		if(m.moveKind == Move.STEP) {
+		if (m.moveKind == Move.STEP) {
 			removePiece(side, m.x2, m.y2);
 			boolean ret = isValidMove(side, m.x1, m.y1);
 			putPiece(side, m.x2, m.y2);
@@ -257,69 +318,59 @@ public class Grid {
 	}
 
 	/**
-	 * generateAllPossibleMoves() generates an array of all the possible moves
-	 * that our bot can make.
-	 **/
-
+	 * isValidMove()
+	 * @param side
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	protected boolean isValidMove(int side, int x, int y) {
 		int stotal = 0;
-		int a = 0;
-		int b = 0;
-		int c = 0;
-		int d = 0;
-		int e = 0;
-		int f = 0;
 
 		boolean[][] visited = new boolean[BOARD_DIMENSIONS][BOARD_DIMENSIONS];
+		
+		// make sure index is not out of bounds
 		if (x > 7 || y > 7 || x < 0 || y < 0) {
 			return false;
 		}
-		if (side == 1) { 						// if side is white - edges
+		
+		if (side == 1) { // if side is white - edges
 			if (y == 0) {
-//				System.out.println("1");
 				return false;
 			}
 			if (y == BOARD_DIMENSIONS - 1) {
-//				System.out.println("2");
 				return false;
 			}
-		} else { 				// if side is black - edges
+		} else { // if side is black - edges
 			if (x == 0) {
-//				System.out.println("3");
 				return false;
 			}
 			if (x == BOARD_DIMENSIONS - 1) {
-//				System.out.println("4");
 				return false;
 			}
 		}
 
-
-		if (board[x][y] != EMPTY) { 			// if is piece already there
-//			System.out.println("5");
+		if (board[x][y] != EMPTY) { // if is piece already there
 			return false;
 		}
-		if (side == COMP) {
-			side = PLAYER;
-		} else if (side == HUMAN) {
-			side = OPP;
-		}
 		
+		side += 1; // change from player to piece on board
+
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
-				if ((x+i) < 0 || (y+j) < 0 || (x+i) > 7 || (y+j) > 7) {
+				if ((x + i) < 0 || (y + j) < 0 || (x + i) > 7 || (y + j) > 7) {
 					continue;
 				}
-				if (isValid(side, x+i, y+j, visited)) {
+				if (isValid(side, x + i, y + j, visited)) {
 					stotal++;
-					visited[x+i][y+j] = true;
+					visited[x + i][y + j] = true;
 					for (int k = -1; k < 2; k++) {
 						for (int l = -1; l < 2; l++) {
-							if ((x+i+k) < 0 || (y+j+l) < 0 || (x+i+k) > 7 || (y+j+l) > 7) {
+							if ((x + i + k) < 0 || (y + j + l) < 0
+									|| (x + i + k) > 7 || (y + j + l) > 7) {
 								continue;
 							}
-							if(isValid(side, x+i+k, y+j+l, visited)) {
-//								System.out.println("Double");
+							if (isValid(side, x + i + k, y + j + l, visited)) {
 								return false;
 							}
 						}
@@ -328,88 +379,19 @@ public class Grid {
 			}
 		}
 		if (stotal > 1) {
-//			System.out.println("stotal > 1");
 			return false;
 		}
-
-//		if (x == 0) {
-//			d = x + 1;
-//			e = x;
-//		} else if (x == 7) {
-//			e = x - 1;
-//			d = x;
-//		} else {
-//			d = x;
-//			e = x;
-//		}
-//		if (y == 0) {
-//			c = y + 1;
-//			f = y;
-//		} else if (y == 7) {
-//			f = y - 1;
-//			c = y;
-//		} else {
-//			c = y;
-//			f = y;
-//		}
-//
-//		int[] m = {d-1, d-1, d-1, d, d, e+1, e+1, e+1};
-//		int[] n = {c-1, c, f+1, c-1, f+1, c-1, c, f+1};
-//		
-//		for (int i = 0; i < m.length; i++) {
-//			if (isValid(side, m[i], n[i], visited)) {
-//				if (m[i] != x || n[i] != y) {
-//					stotal++;
-//					a = m[i];
-//					b = n[i];
-//					visited[m[i]][n[i]] = true;
-//				}
-//			}
-//			
-//		}
-
-//
-//		if (stotal == 1) {
-//			if (a == 0) {
-//				d = a + 1;
-//				e = a;
-//			} else if (a == 7) {
-//				e = a - 1;
-//				d = a;
-//			} else {
-//				d = a;
-//				e = a;
-//			}
-//			if (b == 0) {
-//				c = b + 1;
-//				f = b;
-//			} else if (b == 7) {
-//				f = b - 1;
-//				c = b;
-//			} else {
-//				c = b;
-//				f = b;
-//			}
-//			
-//			int[] p = {d-1, d-1, d-1, d, d, e+1, e+1, e+1};
-//			int[] q = {c-1, c, f+1, c-1, f+1, c-1, c, f+1};
-//			
-//			for (int o = 0; o < p.length; o++) {
-//				if (isValid(side, p[o], q[o], visited)){
-//					if ((p[o] != a || q[o] != b) && (p[o] != x || q[o] != y)) {
-//						stotal++;
-//						visited[p[o]][q[o]] = true;
-//					}
-//				}
-//			}
-//		}
-//		if (stotal >= 2) {
-//			System.out.println("stotal"+x+" "+y);
-//			return false;
-//		}
 		return true;
 	}
-	
+
+	/**
+	 * isValid() helps isValidMove()
+	 * @param side
+	 * @param x
+	 * @param y
+	 * @param visit
+	 * @return true if is valid, false if not
+	 */
 	private boolean isValid(int side, int x, int y, boolean[][] visit) {
 		if (board[x][y] == side && visit[x][y] == false) {
 			return true;
@@ -418,17 +400,28 @@ public class Grid {
 		}
 	}
 
+	/**
+	 * generateAllPossibleMoves() generates a list of all the possible moves
+	 * that the MachinePlayer can make at the moment. If it has placed less than
+	 * 10 pieces on the board, then it will generate an array of valid placement
+	 * moves. If there is already 10 pieces on the board, however, it will try
+	 * to find ways to move a piece to complete a network.
+	 * 
+	 * @param side
+	 *            either WHITE or BLACK
+	 * @return a doubly linked list representing all the different possible
+	 *         moves that this player is able to make at the time.
+	 */
+	protected DList generateAllPossibleMoves(int side) {
+		DList moves = new DList();
 
-	protected list.DList generateAllPossibleMoves(int side) {
-		list.DList moves = new list.DList(); // what kind of data type do we
-												// want for this? dlist? yeah.
 		// all generated moves are step moves
 		if (this.allPiecesUsed()) {
 			for (int[] piece : this.allPieces(side)) {
 				removePiece(side, piece[0], piece[1]);
 				for (int x = 0; x < BOARD_DIMENSIONS; x++) {
 					for (int y = 0; y < BOARD_DIMENSIONS; y++) {
-						if(piece[0] == x && piece[1] == y) {
+						if (piece[0] == x && piece[1] == y) {
 							continue;
 						}
 						if (this.isValidMove(side, x, y)) {
@@ -439,6 +432,8 @@ public class Grid {
 				}
 				putPiece(side, piece[0], piece[1]);
 			}
+
+			// all generated moves are placement moves
 		} else {
 			for (int x = 0; x < BOARD_DIMENSIONS; x++) {
 				for (int y = 0; y < BOARD_DIMENSIONS; y++) {
@@ -452,32 +447,35 @@ public class Grid {
 		return moves;
 	}
 
-	protected boolean isFull() {
-		if (total == 60) {
-			return true;
-		}
-		return false;
-	}
-
+	/**
+	 * Determines whether or not the machine player has used all its pieces.
+	 * Helper function to generateAllPossibleMoves().
+	 * 
+	 * @return true if 10 pieces are used
+	 */
 	private boolean allPiecesUsed() {
-		return (computer_pieces >= 10);
+		return machinePieces >= 10;
 	}
 
-	protected int[][] getBoard() {
-		return board;
-	}
-
-	// List the coordinates of connections of piece at coordinate (x,y)
+	/**
+	 * Lists the coordinates of connections of piece at coordinate (x,y)
+	 * 
+	 * @param x
+	 *            x-coordinate of piece
+	 * @param y
+	 *            y-coordinate of piece
+	 * @return an array of connecting coordinates
+	 */
 	private int[][] listConnections(int x, int y) {
 		// instantiation of arrays with coordinates
 		int[][] sideCoordinates;
 		int[][] opposingCoordinates;
-		if (board[x][y] == PLAYER) {
-			sideCoordinates = allPieces(COMP);
-			opposingCoordinates = allPieces(HUMAN);
+		if (board[x][y] == myPiece) {
+			sideCoordinates = allPieces(machine);
+			opposingCoordinates = allPieces(opponent);
 		} else {
-			sideCoordinates = allPieces(HUMAN);
-			opposingCoordinates = allPieces(COMP);
+			sideCoordinates = allPieces(opponent);
+			opposingCoordinates = allPieces(machine);
 		}
 
 		// if arrays are different lengths
@@ -704,6 +702,14 @@ public class Grid {
 		return list;
 	}
 
+	/**
+	 * totalNumberConnections() returns a count of the longest network for a
+	 * particular side.
+	 * 
+	 * @param side
+	 *            either BLACK or WHITE
+	 * @return the longest network represented by this side
+	 */
 	protected int totalNumberConnections(int side) {
 		int total = 0;
 		int[][] listPieces = allPieces(side);
@@ -715,41 +721,47 @@ public class Grid {
 		return total;
 	}
 
-	// returns max number of connected connections of a side
-
-	protected int numberPiecesInGoal(int side, boolean start){
-		// true = start goal; false = end goal
-		int counter = 0;
-			for (int x = 1; x < 7; x++){
-				if (side == 0 && start && board[x][0] == 1){
-					counter+=1;
-				}
-				else if (side == 0 && !start && board[x][7] == 1){
-					counter+=1;
-				}
-				else if (side == 1 && start && board[0][x] == 2){
-					counter+=1;
-				}
-				else if (side == 1 && !start && board[7][x] == 2){
-					counter+=1;
-				}
-			}
-			return counter;
-		}
-	
 	/**
-	 * private int maxNumOfConnections(int side){ int[][] list =
-	 * allPieces(side); int[] array = new int[list.length]; int[][] list2 = new
-	 * int[1][]; for (int i = 0; i < list.length; i++){ int counter = 0; while
-	 * (list2.length != 0){ if (list2.length == 0){ array[i] = counter; }else{
-	 * list2 = listConnections(list[i][0], list[i][1]); if (list2.length > 0){
-	 * counter++; } } } } int max = 0; for (int j = 0; j < array.length; j++){
-	 * if (array[j] > max){ max = array[j]; } } return max; }
-	 **/
+	 * numberPiecesInGoal() figures out how many pieces reside at a specific
+	 * goal line.
+	 * 
+	 * @param side
+	 *            either BLACK or WHITE
+	 * @param start
+	 *            true = start goal false = end goal
+	 * @return number of pieces in the goal line
+	 */
+	protected int numberPiecesInGoal(int side, boolean start) {
+		int counter = 0;
+		for (int goalZoneIndex = 1; goalZoneIndex < 7; goalZoneIndex++) {
+
+			// check black start zone for black pieces
+			if (side == BLACK && start && board[goalZoneIndex][0] == 1) {
+				counter += 1;
+
+				// check black end zone for black pieces
+			} else if (side == BLACK && !start
+					&& board[goalZoneIndex][BOARD_DIMENSIONS - 1] == 1) {
+				counter += 1;
+
+				// check white start zone for white pieces
+			} else if (side == WHITE && start && board[0][goalZoneIndex] == 2) {
+				counter += 1;
+
+				// check white end zone for white pieces
+			} else if (side == WHITE && !start
+					&& board[BOARD_DIMENSIONS - 1][goalZoneIndex] == 2) {
+				counter += 1;
+			}
+		}
+		return counter;
+	}
 
 	/**
 	 * toString() prints out a visual representation of the board onto the
 	 * console.
+	 * 
+	 * @return a String representation of the board
 	 **/
 	public String toString() {
 		String board = "----------------------------------------- \n";
@@ -764,23 +776,27 @@ public class Grid {
 		return board;
 	}
 
-	// For testing purposes
-	private int getNumPieces() {
-		return computer_pieces;
-	}
-
-	public String toString2(int[][] x) {
-
+	/**
+	 * pieceCoordinatesToString() will output a String representation of the
+	 * coordinates of all the pieces of a side. This method is used for testing
+	 * purposes only.
+	 * 
+	 * @param coordinates
+	 *            a group of coordinates expressed in 2d array form
+	 * @return a String representation of the coordinates
+	 */
+	public String pieceCoordinatesToString(int[][] coordinates) {
 		String list = "[ ";
-		for (int i = 0; i < x.length; i++) {
-			list = list + "( " + x[i][0] + ", " + x[i][1] + " ) ";
+		for (int i = 0; i < coordinates.length; i++) {
+			list = list + "( " + coordinates[i][0] + ", " + coordinates[i][1]
+					+ " ) ";
 		}
 		list = list + "]";
 		return list;
 	}
 
 	/**
-	 * main() is the test class for Grid.
+	 * main() is the test class for Grid. This is not meant to be graded.
 	 * 
 	 * @throws InvalidMoveException
 	 **/
@@ -810,7 +826,7 @@ public class Grid {
 		 * System.out.println(g1.getNumPieces()); System.out.println("hi" +
 		 * g1.total);
 		 **/
-		
+
 		g1.putPiece(0, 4, 0);
 		g1.putPiece(1, 0, 4);
 		g1.putPiece(0, 4, 4);
@@ -828,32 +844,33 @@ public class Grid {
 		g1.putPiece(0, 2, 6);
 		System.out.println(g1);
 		int[][] list = g1.listConnections(4, 4);
-		System.out.println(g1.toString2(g1.allPieces(0)));
-		System.out.println(g1.toString2(g1.allPieces(1)));
-		System.out.println(g1.toString2(list));
-		
+		System.out.println(g1.pieceCoordinatesToString(g1.allPieces(0)));
+		System.out.println(g1.pieceCoordinatesToString(g1.allPieces(1)));
+		System.out.println(g1.pieceCoordinatesToString(list));
+
 		System.out.println(g1.numberPiecesInGoal(1, false));
-		
-		  g2.putPiece(1, 0, 1);
-	      g2.putPiece(1, 2, 2);
-	      g2.putPiece(1, 6, 1);
-	      g2.putPiece(1, 2, 3);
-	      g2.putPiece(1, 4, 4);
-	      g2.putPiece(1, 7, 4);
-	      g2.putPiece(0, 1, 0);
-	      g2.putPiece(0, 3, 4);
-	      g2.putPiece(0, 6, 4);
-	      g2.putPiece(0, 1, 6);
-	      g2.putPiece(0, 6, 7);
-	      g2.putPiece(0, 3, 1);
-		  System.out.println(g2);
-	    //  try {
-	    	System.out.println(g2.toString2(g2.listConnections(3, 1)));
-			//System.out.println(g2.hasValidNetwork(0));
-		//} catch (InvalidNodeException e) {
-			// TODO Auto-generated catch block
-		//	e.printStackTrace();
-	//	}
+
+		g2.putPiece(1, 0, 1);
+		g2.putPiece(1, 2, 2);
+		g2.putPiece(1, 6, 1);
+		g2.putPiece(1, 2, 3);
+		g2.putPiece(1, 4, 4);
+		g2.putPiece(1, 7, 4);
+		g2.putPiece(0, 1, 0);
+		g2.putPiece(0, 3, 4);
+		g2.putPiece(0, 6, 4);
+		g2.putPiece(0, 1, 6);
+		g2.putPiece(0, 6, 7);
+		g2.putPiece(0, 3, 1);
+		System.out.println(g2);
+		// try {
+		System.out
+				.println(g2.pieceCoordinatesToString(g2.listConnections(3, 1)));
+		// System.out.println(g2.hasValidNetwork(0));
+		// } catch (InvalidNodeException e) {
+		// TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 	}
 
 }
